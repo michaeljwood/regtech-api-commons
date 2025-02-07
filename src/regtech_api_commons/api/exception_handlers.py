@@ -1,6 +1,6 @@
 from http import HTTPStatus
 import logging
-from fastapi.exceptions import RequestValidationError
+from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from starlette.responses import JSONResponse
 from starlette.requests import Request
 from starlette.exceptions import HTTPException
@@ -27,6 +27,15 @@ async def request_validation_error_handler(request: Request, exception: RequestV
     return JSONResponse(
         status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
         content={ERROR_NAME: "Request Validation Failure", ERROR_DETAIL: str(exception.errors())},
+    )
+
+
+async def response_validation_error_handler(request: Request, exception: ResponseValidationError) -> JSONResponse:
+    log.exception(f"Handling ResponseValidationError.", exc_info=True)
+    detail = str([error["msg"] for error in exception.errors()])
+    return JSONResponse(
+        status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+        content={ERROR_NAME: "Response Validation Failure", ERROR_DETAIL: detail},
     )
 
 

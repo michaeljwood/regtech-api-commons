@@ -2,7 +2,7 @@ from http import HTTPStatus
 import json
 
 from fastapi import HTTPException, Request
-from fastapi.exceptions import RequestValidationError
+from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import pytest
 from pytest_mock import MockerFixture
@@ -14,6 +14,7 @@ from regtech_api_commons.api.exception_handlers import (
     http_exception_handler,
     general_exception_handler,
     log as exception_logger,
+    response_validation_error_handler,
 )
 from regtech_api_commons.api.exceptions import RegTechHttpException
 
@@ -61,6 +62,15 @@ async def test_request_validation_error_handler(mock_request: Request):
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     content = json.loads(response.body)
     assert content[ERROR_DETAIL] == str(rve.errors())
+
+
+async def test_response_validation_error_handler(mock_request: Request):
+    errors = [{"loc": "test1", "msg": "error1"}, {"loc": "test2", "msg": "error2"}]
+    rve = ResponseValidationError(errors=errors)
+    response = await response_validation_error_handler(mock_request, rve)
+    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    content = json.loads(response.body)
+    assert content[ERROR_DETAIL] == "['error1', 'error2']"
 
 
 async def test_general_http_exception_handler(mock_request: Request):
