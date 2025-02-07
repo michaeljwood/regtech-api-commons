@@ -9,6 +9,7 @@ from regtech_api_commons.api.exception_handlers import (
     request_validation_error_handler,
     response_validation_error_handler,
 )
+from pydantic import ValidationError
 
 
 class RegtechApp(FastAPI):
@@ -24,4 +25,5 @@ class RegtechApp(FastAPI):
         self.add_exception_handler(RequestValidationError, request_validation_error_handler)  # type: ignore[type-arg]  # noqa: E501
         self.add_exception_handler(HTTPException, http_exception_handler)  # type: ignore[type-arg]  # noqa: E501
         self.add_exception_handler(ResponseValidationError, response_validation_error_handler)  # type: ignore[type-arg]  # noqa: E5010
+        self.add_exception_handler(ValidationError, response_validation_error_handler)  # type: ignore[type-arg]  # noqa: E5010
         self.add_exception_handler(Exception, general_exception_handler)  # type: ignore[type-arg]  # noqa: E501
